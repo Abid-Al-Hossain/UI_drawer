@@ -8,6 +8,7 @@ type Props = { state: DrawerState; update: <K extends keyof DrawerState>(key: K,
 
 export default function BasicsSection({ state, update }: Props) {
   return <SectionCard title="Basics" subtitle="Basics controls for native drawer generation."><Input label="Title" value={state.title} onChange={(value) => update("title", value)} />
+<Input label="Trigger label" value={state.triggerLabel ?? "Open drawer"} onChange={(value) => update("triggerLabel", value)} />
 <Input label="Label" value={state.label} onChange={(value) => update("label", value)} />
 <Input label="Description" value={state.description} onChange={(value) => update("description", value)} />
 <Input label="Helper" value={state.helper} onChange={(value) => update("helper", value)} /></SectionCard>;
