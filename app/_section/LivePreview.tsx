@@ -7,7 +7,14 @@ function isInitiallyOpen(state: DrawerState) {
   return state.defaultOpen ?? state.previewState === "open";
 }
 
-function panelStyle(state: DrawerState): CSSProperties {
+function getClosedTranslate(side: DrawerState["side"]): string {
+  if (side === "left") return "translateX(-100%)";
+  if (side === "right") return "translateX(100%)";
+  if (side === "top") return "translateY(-100%)";
+  return "translateY(100%)";
+}
+
+function panelStyle(state: DrawerState, open: boolean): CSSProperties {
   const horizontal = state.side === "left" || state.side === "right";
   return {
     position: "fixed",
@@ -30,6 +37,8 @@ function panelStyle(state: DrawerState): CSSProperties {
     color: state.foreground,
     fontFamily: state.fontFamily,
     opacity: state.disabled ? 0.55 : 1,
+    transform: open ? "translate(0,0)" : getClosedTranslate(state.side),
+    transition: state.motion ? "transform 320ms cubic-bezier(.32,.72,0,1)" : "none",
   };
 }
 
@@ -62,28 +71,38 @@ export default function LivePreview({ state }: { state: DrawerState }) {
         {state.triggerLabel || "Open drawer"}
       </button>
       <p className="mt-4 max-w-md text-sm" style={{ color: state.muted }}>Preview state: {open ? "open" : "closed"}. Escape close is {state.closeOnEscape ? "enabled" : "disabled"}; outside close is {state.closeOnOutside ? "enabled" : "disabled"}.</p>
-      {open && (
-        <div
-          onMouseDown={(event) => {
-            if (state.closeOnOutside && event.target === event.currentTarget) closeDrawer();
-          }}
-          className="absolute inset-0"
-          style={{ background: state.showOverlay ? "rgba(15, 23, 42, .58)" : "transparent" }}
+      <div
+        onMouseDown={(event) => {
+          if (open && state.closeOnOutside && event.target === event.currentTarget) closeDrawer();
+        }}
+        className="absolute inset-0"
+        style={{
+          pointerEvents: open ? "auto" : "none",
+          background: open && state.showOverlay ? "rgba(15, 23, 42, .58)" : "transparent",
+          transition: state.motion ? "background 320ms ease" : "none",
+        }}
+      >
+        <section
+          role="dialog"
+          aria-modal={state.modal}
+          aria-label={state.ariaLabel}
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          tabIndex={state.tabIndex}
+          style={panelStyle(state, open)}
         >
-          <section role="dialog" aria-modal={state.modal} aria-label={state.ariaLabel} aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={state.tabIndex} style={panelStyle(state)}>
-            <button type="button" aria-label="Close drawer" onClick={closeDrawer} className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ justifySelf: "end", borderColor: state.border, color: state.foreground }}>
-              Close
-            </button>
-            <h3 id={titleId} style={{ margin: 0, fontSize: state.titleSize, fontWeight: state.fontWeight }}>{state.title}</h3>
-            <p id={descriptionId} style={{ margin: 0, color: state.muted, fontSize: state.bodySize }}>{state.description}</p>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" className="rounded-xl px-4 py-2" style={{ background: state.accent, color: "#020617" }}>{state.label}</button>
-              <button type="button" className="rounded-xl border px-4 py-2" style={{ borderColor: state.border }}>Cancel</button>
-            </div>
-            <p className="text-xs" style={{ color: state.muted }}>{state.helper} Focus trap is not implemented; focus return is {state.focusReturn ? "enabled" : "disabled"}.</p>
-          </section>
-        </div>
-      )}
+          <button type="button" aria-label="Close drawer" onClick={closeDrawer} className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ justifySelf: "end", borderColor: state.border, color: state.foreground }}>
+            Close
+          </button>
+          <h3 id={titleId} style={{ margin: 0, fontSize: state.titleSize, fontWeight: state.fontWeight }}>{state.title}</h3>
+          <p id={descriptionId} style={{ margin: 0, color: state.muted, fontSize: state.bodySize }}>{state.description}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="rounded-xl px-4 py-2" style={{ background: state.accent, color: "#020617" }}>{state.label}</button>
+            <button type="button" className="rounded-xl border px-4 py-2" style={{ borderColor: state.border }}>Cancel</button>
+          </div>
+          <p className="text-xs" style={{ color: state.muted }}>{state.helper} Focus trap is not implemented; focus return is {state.focusReturn ? "enabled" : "disabled"}.</p>
+        </section>
+      </div>
     </div>
   );
 }
