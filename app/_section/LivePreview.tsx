@@ -2,6 +2,25 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { DrawerState } from "../types";
+import { SYSTEM_FONTS } from "@/components/shared/typography/fontConstants";
+
+function resolveFont(state: { fontBucket: "system" | "google"; googleFontFamily: string; systemFontIdx: number }): string {
+  return state.fontBucket === "google"
+    ? `"${state.googleFontFamily}", sans-serif`
+    : (SYSTEM_FONTS[state.systemFontIdx]?.css ?? "inherit");
+}
+
+function buildShadow(state: { shadowEnabled: boolean; shadowX: number; shadowY: number; shadowBlur: number; shadowSpread: number; shadowColor: string; shadowOpacity: number }): string {
+  if (!state.shadowEnabled) return "none";
+  const hex = Math.round(state.shadowOpacity * 255).toString(16).padStart(2, "0");
+  return `${state.shadowX}px ${state.shadowY}px ${state.shadowBlur}px ${state.shadowSpread}px ${state.shadowColor}${hex}`;
+}
+
+function buildRadius(state: { radiusLinked: boolean; radius: number; radiusTL: number; radiusTR: number; radiusBR: number; radiusBL: number }): string {
+  return state.radiusLinked
+    ? `${state.radius}px`
+    : `${state.radiusTL}px ${state.radiusTR}px ${state.radiusBR}px ${state.radiusBL}px`;
+}
 
 function isInitiallyOpen(state: DrawerState) {
   return state.defaultOpen ?? state.previewState === "open";
@@ -30,15 +49,20 @@ function panelStyle(state: DrawerState, open: boolean): CSSProperties {
     display: "grid",
     alignContent: "start",
     gap: state.gap,
-    borderRadius: state.radius,
-    border: `${state.borderWidth}px solid ${state.border}`,
-    boxShadow: `0 ${Math.round(state.shadow / 3)}px ${state.shadow}px rgba(0,0,0,.28)`,
+    borderRadius: buildRadius(state),
+    border: `${state.borderWidth}px ${state.borderStyle} ${state.border}`,
+    boxShadow: buildShadow(state),
     background: state.background,
     color: state.foreground,
-    fontFamily: state.fontFamily,
+    fontFamily: resolveFont(state),
+    fontStyle: state.fontStyle,
+    textTransform: state.textTransform,
+    textDecoration: state.textDecoration,
+    letterSpacing: `${state.letterSpacing}${state.letterSpacingUnit}`,
+    lineHeight: state.lineHeight,
     opacity: state.disabled ? 0.55 : 1,
     transform: open ? "translate(0,0)" : getClosedTranslate(state.side),
-    transition: state.motion ? "transform 320ms cubic-bezier(.32,.72,0,1)" : "none",
+    transition: state.transitionDuration > 0 ? "transform 320ms cubic-bezier(.32,.72,0,1)" : "none",
   };
 }
 
@@ -79,7 +103,7 @@ export default function LivePreview({ state }: { state: DrawerState }) {
         style={{
           pointerEvents: open ? "auto" : "none",
           background: open && state.showOverlay ? "rgba(15, 23, 42, .58)" : "transparent",
-          transition: state.motion ? "background 320ms ease" : "none",
+          transition: state.transitionDuration > 0 ? "background 320ms ease" : "none",
         }}
       >
         <section
