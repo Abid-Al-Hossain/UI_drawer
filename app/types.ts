@@ -1,4 +1,4 @@
-export type SectionId = "presets" | "basics" | "metadata" | "content" | "items" | "behavior" | "layout" | "placement" | "sizing" | "colors" | "border" | "radius" | "shadow" | "typography" | "transitions" | "focus-ring" | "states" | "accessibility";
+export type SectionId = "presets" | "basics" | "metadata" | "content" | "items" | "behavior" | "layout" | "placement" | "sizing" | "colors" | "border" | "radius" | "shadow" | "typography" | "transitions" | "focus-ring" | "states" | "disabled" | "accessibility";
 
 export type DrawerState = {
   title: string;
@@ -55,11 +55,18 @@ export type DrawerState = {
   muted: string;
   accent: string;
   border: string;
+  actionText: string;
   titleSize: number;
   bodySize: number;
   fontWeight: number;
   previewState: "default" | "hover" | "focus" | "active" | "open" | "closed" | "selected" | "loading" | "empty" | "error" | "success";
   disabled: boolean;
+  disabledOpacity: number;
+  disabledCursor: "not-allowed" | "default" | "pointer";
+  disabledUseCustomColors: boolean;
+  disabledBg: string;
+  disabledText: string;
+  disabledBorder: string;
   role: "dialog";
   side: "top" | "right" | "bottom" | "left";
   defaultOpen?: boolean;
@@ -69,6 +76,32 @@ export type DrawerState = {
   closeOnOutside: boolean;
   scrollLock: boolean;
   focusReturn: boolean;
+  // Overlay
+  overlayBg: string;
+  overlayOpacity: number;
+  // Header
+  headerBg: string;
+  headerText: string;
+  headerBorder: string;
+  // Footer
+  footerBg: string;
+  footerBorder: string;
+  dividerColor: string;
+  // Close button
+  closeIconColor: string;
+  closeIconHoverBg: string;
+  closeIconSize: number;
+  // Action buttons
+  primaryBg: string;
+  primaryText: string;
+  secondaryBg: string;
+  secondaryText: string;
+  secondaryBorder: string;
+  // Motion & handle
+  animationType: "slide" | "fade" | "scale";
+  handleVisible: boolean;
+  handleColor: string;
+  handleWidth: number;
 };
 
 export type StudioPreset = { id: string; family: string; archetype: string; variant: string; size: string; tags: string[]; state: Partial<DrawerState> & Record<string, unknown> };
@@ -141,6 +174,10 @@ export const SECTIONS: Array<{ id: SectionId; label: string }> = [
   {
     "id": "states",
     "label": "State Preview"
+  },
+  {
+    "id": "disabled",
+    "label": "Disabled"
   },
   {
     "id": "accessibility",
